@@ -1,5 +1,4 @@
 # ring-redis-session
-Release
 *A Redis backed Clojure/Ring session store*
 
 **Contents**
