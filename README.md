@@ -1,13 +1,5 @@
 # ring-redis-session
 
-[![Build Status][travis-badge]][travis]
-[![Clojars Project][clojars-badge]][clojars]
-[![Tag][tag-badge]][tag]
-[![JDK version][jdk-v]](.travis.yml)
-[![Clojure version][clojure-v]](project.clj)
-
-[![Project Logo][logo]][logo-large]
-
 *A Redis backed Clojure/Ring session store*
 
 **Contents**
@@ -62,13 +54,13 @@ First, require the session namespaces:
 ```
 
 Then define the Redis [connection options][redis conn opts] as you would when
-using Carmine directly. For example:
+using Carmine directly. For example (docker image):
 
 ```clj
 (def conn {:pool {}
-           :spec {:host "127.0.0.1"
+           :spec {:host "0.0.0.0" ;; For running app locally and redis in docker
                   :port 6379
-                  :password "s3kr1t"
+                  :password "s3kr1t" ;; If password is configured
                   :timeout-ms 5000}})
 ```
 
@@ -87,6 +79,7 @@ If you are using `friend` for auth/authz, you will want to thread your security
 wrappers first, and then the session. If you are using `ring-defaults` to wrap
 for the site defaults, you'll want to thread the session wrapper before the
 defaults are set.
+
 
 Automatically expire sessions after 12 hours:
 
@@ -139,36 +132,11 @@ This example shows how to set handlers to store data in `transit` format:
 
 ## Release Notes
 
+* **4.0.0-SNAPSHOT**
+  - Changing stuff up
+
 * **3.3.0-SNAPSHOT**
-  - Data serialization now happens with default for
-    `com.taoensso/carmine` `nippy` library because original
-    serialization method was based on deprecated `eval` read macro `#=`;
-
-  - `read-handler` and `:write-handler` options added to constructor
-    which can be used to define custom data serialization format. See example in
-    [Customize data serialization format](#customize-data-serialization-format) section.
-
-
-* **v3.1.0** - This release has changed the repo name, project name, and release
-  name from `clj-redis-session` to `ring-redis-session` (thanks @plexus for the
-  great suggestion!)
-
-* **v3.0.0** - This release introduces a breaking change in the API. Whereas
-  prior to this release on used `ring-redis-session.core`, one now has to use
-  `ring.redis.session`. If this is a problem for your project, simply ensure
-  that you depend upon a version prior to the v3.0.0 release -- all of which
-  uphold the old API.
-
-
-## Donating
-
-A donation account for supporting development on this project has been set up
-on Liberapay here:
-
-* [https://liberapay.com/clojusc-ring-redis-session/donate](https://liberapay.com/clojusc-ring-redis-session/donate)
-
-You can learn more about Liberapay on its [Wikipedia entry][libera-wiki] or on the
-service's ["About" page][libera-about].
+  - 
 
 
 ## License
