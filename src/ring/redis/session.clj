@@ -1,9 +1,8 @@
 (ns ring.redis.session
-  "Redis session storage."
-  (:require [clojure.tools.logging :as log]
+  (:require [taoensso.timbre :as log]
             [ring.middleware.session.store :as api]
             [ring.redis.session.util :as util]
-            [taoensso.carmine :as redis]))
+            [taoensso.carmine :as carmine]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Method implementations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,10 +15,10 @@
     (when session-key
       (log/debug "In read-session ...")
       (log/debug "\tsession-key:" session-key)
-      (when-let [data (redis/wcar conn (redis/get session-key))]
+      (when-let [data (carmine/wcar conn (carmine/get session-key))]
         (let [read-handler (:read-handler this)]
           (when (and (:expiration this) (:reset-on-read this))
-            (redis/wcar conn (redis/expire session-key (:expiration this))))
+            (carmine/wcar conn (carmine/expire session-key (:expiration this))))
           (read-handler data))))))
 
 (defn write-redis-session
@@ -30,17 +29,17 @@
         expiri (:expiration this)]
     (log/debug "In write-redis-session ...")
     (log/debug "\tsession-key:" session-key)
-    (log/debug "\tdata:" (util/log-pprint data))
+    (log/debug "\tdata:" data)
     (let [write-handler (:write-handler this)]
       (if expiri
-        (redis/wcar conn (redis/setex session-key expiri (write-handler data)))
-        (redis/wcar conn (redis/set session-key (write-handler data)))))
+        (carmine/wcar conn (carmine/setex session-key expiri (write-handler data)))
+        (carmine/wcar conn (carmine/set session-key (write-handler data)))))
     session-key))
 
 (defn delete-redis-session
   "Delete a session in a Redis store."
   [this session-key]
-  (redis/wcar (:redis-conn this) (redis/del session-key))
+  (carmine/wcar (:redis-conn this) (carmine/del session-key))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,10 +48,9 @@
 
 (defrecord RedisStore [redis-conn prefix expiration reset-on-read read-handler write-handler])
 
-(def store-behaviour {
-  :read-session read-redis-session
-  :write-session write-redis-session
-  :delete-session delete-redis-session})
+(def store-behaviour {:read-session read-redis-session
+                      :write-session write-redis-session
+                      :delete-session delete-redis-session})
 
 (extend RedisStore api/SessionStore store-behaviour)
 
@@ -63,11 +61,16 @@
 (defn redis-store
   "Creates a redis-backed session storage engine."
   ([redis-conn]
-    (redis-store redis-conn {}))
+   (redis-store redis-conn {}))
   ([redis-conn {:keys [prefix expire-secs reset-on-read read-handler write-handler]
                 :or {prefix "session"
                      read-handler identity
                      write-handler identity
                      reset-on-read false}}]
-    (log/debug "Creating Redis store ...")
-    (->RedisStore redis-conn prefix expire-secs reset-on-read read-handler write-handler)))
+   (log/debug "Creating Redis store ...")
+   (->RedisStore redis-conn prefix expire-secs reset-on-read read-handler write-handler)))
+
+
+
+
+

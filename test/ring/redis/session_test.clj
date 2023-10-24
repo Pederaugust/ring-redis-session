@@ -1,7 +1,3 @@
 (ns ring.redis.session-test
-  (:use [ring.redis.session])
-  (:use [clojure.test]))
+  (:require [ring.redis.session]))
 
-;; XXX write some tests ...
-(deftest replace-me
-  (is true))
